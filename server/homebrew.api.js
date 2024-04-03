@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 const _ = require('lodash');
 const HomebrewModel = require('./homebrew.model.js').model;
+const HomebrewFavoritesModel = require('./homebrew_favorites.model.js').model;
 const router = require('express').Router();
 const zlib = require('zlib');
 const GoogleActions = require('./googleActions.js');
@@ -360,6 +361,46 @@ const api = {
 		}
 
 		res.status(204).send();
+	},
+	// Favorites management.
+	getFavorites : async (req, res)=>{
+		const favorites = await HomebrewFavoritesModel.getByUser(id);
+		res.status(200).send(favorites);
+	},
+	addFavorite : async (req, res)=>{
+		const favorites = await(HomebrewFavoritesModel.getByUser(id));
+		this.getBrew('share', true);
+		const newFavorite = {
+			shareId     : req.params.id,
+			title       : req.brew.title,
+			description : req.brew.description,
+			tags        : req.brew.tags,
+			systems     : req.brew.systems,
+			lang        : req.brew.lang,
+			renderer    : req.brew.renderer,
+			authors     : req.brew.authors,
+			createdAt   : req.brew.createdAt
+		};
+		if(!favorites.some((fav)=>fav.shareId === req.params.id)) {
+			favorites.favorites.push(newFavorite);
+			await favorites.save().catch((error)=>{ throw `Unable to save favorites. ${error}`});
+			res.status(418).send('Unable to update favorites');
+			throw `Unable to save favorites. ${error}`;
+		}
+		res.status(200).send();
+	},
+	deleteFavorite : async (req, res)=>{
+		const favorites = await(HomebrewFavoritesModel.getByUser(id));
+		this.getBrew('share', true);
+		const location = favorites.findIndex((fav)=>fav.shareId === req.params.id)
+		if(location != -1) {
+			favorites.favorites.splice(location, 1);
+			await favorites.save().catch((error)=>{
+				res.status(418).send('Unable to update favorites');
+				throw `Unable to save favorites. ${error}`;
+			});
+		}
+		res.status(204).send();
 	}
 };
 
@@ -369,5 +410,10 @@ router.put('/api/:id', asyncHandler(api.getBrew('edit', true)), asyncHandler(api
 router.put('/api/update/:id', asyncHandler(api.getBrew('edit', true)), asyncHandler(api.updateBrew));
 router.delete('/api/:id', asyncHandler(api.deleteBrew));
 router.get('/api/remove/:id', asyncHandler(api.deleteBrew));
+
+// Favorites
+router.get('/api/fav/:userid', asyncHandler(api.getFavorites));
+router.put('/api/fav/:userid/:id', asyncHandler(api.addFavorite));
+router.delete('/api/fav/:userid/:id', asyncHandler(api.deleteFavorite));
 
 module.exports = api;
