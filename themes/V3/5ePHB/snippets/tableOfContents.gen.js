@@ -29,7 +29,7 @@ const getTOC = (pages)=>{
 
 	const res = [];
 	_.each(pages, (page, pageNum)=>{
-		if(!page.includes("{{frontCover}}") && !page.includes("{{insideCover}}") && !page.includes("{{partCover}}") && !page.includes("{{backCover}}")) {
+		if(!page.includes('{{frontCover}}') && !page.includes('{{insideCover}}') && !page.includes('{{partCover}}') && !page.includes('{{backCover}}')) {
 			const lines = page.split('\n');
 			_.each(lines, (line)=>{
 				if(_.startsWith(line, '# ')){
@@ -78,7 +78,7 @@ module.exports = function(props){
 
 	return dedent`
 		{{toc,wide
-		# Table Of Contents
+		# Contents
 
 		${markdown}
 		}}
