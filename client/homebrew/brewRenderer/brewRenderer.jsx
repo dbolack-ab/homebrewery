@@ -73,7 +73,7 @@ const BrewRenderer = (props)=>{
 	if(props.renderer == 'legacy') {
 		rawPages = props.text.split('\\page');
 	} else {
-		rawPages = props.text.split(/^\\page$/gm);
+		rawPages = props.text.split(/^\\page[\t ]*$/gm);
 	}
 
 	useEffect(()=>{ // Unmounting steps
