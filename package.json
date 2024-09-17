@@ -102,7 +102,7 @@
     "express": "^4.21.0",
     "express-async-handler": "^1.2.0",
     "express-requests-logger": "^4.0.0",
-    "express-static-gzip": "2.1.7",
+    "express-static-gzip": "2.1.8",
     "file-saver": "^2.0.5",
     "fs-extra": "11.2.0",
     "html-to-image": "^1.11.11",
