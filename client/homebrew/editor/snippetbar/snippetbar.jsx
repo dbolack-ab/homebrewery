@@ -294,6 +294,7 @@ const SnippetGroup = createClass({
 				<span className={`name${snippet.disabled ? ' disabled' : ''}`} title={snippet.name}>{snippet.name}</span>
 				{snippet.experimental && <span className='beta'>beta</span>}
 				{snippet.disabled     && <span className='beta' title="temporarily disabled due to large slowdown; under re-design">disabled</span>}
+				{snippet.help && <i className='fas fa-question-circle'></i>}
 				{snippet.subsnippets && <>
 					<i className='fas fa-caret-right'></i>
 					<div className='dropdown side'>
