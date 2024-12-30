@@ -19,7 +19,7 @@ const Editor = require('../../editor/editor.jsx');
 const BrewRenderer = require('../../brewRenderer/brewRenderer.jsx');
 
 const { DEFAULT_BREW } = require('../../../../server/brewDefaults.js');
-const { printCurrentBrew, fetchThemeBundle } = require('../../../../shared/helpers.js');
+const { printCurrentBrew, fetchThemeBundle, asTemplateMap } = require('../../../../shared/helpers.js');
 
 const BREWKEY  = 'homebrewery-new';
 const STYLEKEY = 'homebrewery-new-style';

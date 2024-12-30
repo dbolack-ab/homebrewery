@@ -91,10 +91,9 @@ let brewTemplates;
 const getPageTemplates = (pages)=>{
 	const tempPages = [];
 	brewTemplates = [];
-	brewTemplates[1] = 'Blank';
 	pages.forEach((page, index)=>{
 		const firstLine = page.split('\n')[0];
-		if(firstLine.startsWith('\page')) {
+		if(firstLine.startsWith('\\page')) {
 			const firstLineClean = firstLine.slice(5).trim();
 			if((firstLineClean.length > 0) || (brewTemplates.length > 0)) {
 				brewTemplates[ index ] = firstLineClean;
@@ -106,26 +105,52 @@ const getPageTemplates = (pages)=>{
 	});
 	return tempPages;
 };
+
 const insertTemplate = (props, pageNumber)=>{
 	let lookAt = pageNumber;
+	const thisLeftRightNone = pageNumber % 2 == 0 ? 'l' : 'r';
 	while ((lookAt > 0) && (typeof brewTemplates[lookAt] === 'undefined')) lookAt--;
 	if(typeof brewTemplates[lookAt] !== 'undefined') {
-		const whichTemplate = brewTemplates[lookAt].split(':');
+		let fallbackTemplate, fallbackBlank, fallbackAbsolute;
+		const whichTemplateSplit = brewTemplates[lookAt].split(':');
+		let whichTemplate = whichTemplateSplit[1] ? whichTemplateSplit[1] : 'Blank';
 		// If the template source is not in the themes list, it must be a local template.
 		if(props.templateBundle) {
 			for (let tb of props.templateBundle) {
-				if((tb.theme == whichTemplate[0]) && (tb.name == whichTemplate[1])) {
-					return tb.template;
-				}
+				// Find the *blank* fallback for the correct page
+				if((tb.theme == whichTemplateSplit[0]) && (tb.name == 'Blank') && (
+					tb.leftRightNone == thisLeftRightNone))	fallbackBlank = tb.template;
+				// Find the *blank* fallback for *none* page
+				if((tb.theme == whichTemplateSplit[0]) && (tb.name == 'Blank') && (
+					tb.leftRightNone == '')) fallbackAbsolute = tb.template;
+				// Find the *none* fallback for the correct template
+				if((tb.theme == whichTemplateSplit[0]) && (tb.name == whichTemplate) && (
+					tb.leftRightNone == ''))	fallbackTemplate = tb.template;
+
+				if((tb.theme == whichTemplateSplit[0]) && (tb.name == whichTemplate) && (
+					tb.leftRightNone == thisLeftRightNone))	return tb.template;
+				// Fallback returns
 			}
 		}
 		if(props.userTemplates) {
+			let returnVal;
+			whichTemplate = whichTemplateSplit[0] ? whichTemplateSplit[0] : 'Blank';
 			for (let ut of props?.userTemplates) {
-				if(ut.name == whichTemplate[1]) {
-					return ut.template;
+				// Find the *blank* fallback for the correct page
+				if((ut.name == 'Blank') && (ut.leftRightNone == thisLeftRightNone) && (!fallbackBlank))	fallbackBlank = ut.template;
+				// Find the *blank* fallback for *none* page
+				if((ut.name == 'Blank') && (ut.leftRightNone == '') && (!fallbackAbsolute)) fallbackAbsolute = ut.template;
+				// Find the *none* fallback for the correct template
+				if((ut.name == whichTemplate) && (ut.leftRightNone == '') && (!fallbackTemplate))	fallbackTemplate = ut.template;
+				if((ut.name == whichTemplate) && (ut.leftRightNone == thisLeftRightNone)) {
+					returnVal = ut.template;
 				}
 			}
+			if(returnVal) return returnVal;
 		}
+		if(fallbackTemplate) return fallbackTemplate;
+		if(fallbackBlank) return fallbackBlank;
+		if(fallbackAbsolute) return fallbackAbsolute;
 	}
 	return '';
 };

@@ -445,45 +445,45 @@ const EditPage = createClass({
 			{this.renderNavbar()}
 
 			{this.props.brew.lock && <LockNotification shareId={this.props.brew.shareId} message={this.props.brew.lock.editMessage} />}
-			<div className="content">
-			<SplitPane onDragFinish={this.handleSplitMove}>
-				<Editor
-					ref={this.editor}
-					brew={this.state.brew}
-					onTextChange={this.handleTextChange}
-					onTemplateChange={this.handleTemplateChange}
-					onStyleChange={this.handleStyleChange}
-					onMetaChange={this.handleMetaChange}
-					reportError={this.errorReported}
-					renderer={this.state.brew.renderer}
-					userThemes={this.props.userThemes}
-					snippetBundle={this.state.themeBundle.snippets}
-					templateBundle={this.state.themeBundle.templates}
-					updateBrew={this.updateBrew}
-					onCursorPageChange={this.handleEditorCursorPageChange}
-					onViewPageChange={this.handleEditorViewPageChange}
-					currentEditorViewPageNum={this.state.currentEditorViewPageNum}
-					currentEditorCursorPageNum={this.state.currentEditorCursorPageNum}
-					currentBrewRendererPageNum={this.state.currentBrewRendererPageNum}
-				/>
-				<BrewRenderer
-					text={this.state.brew.text}
-					style={this.state.brew.style}
-					renderer={this.state.brew.renderer}
-					theme={this.state.brew.theme}
-					themeBundle={this.state.themeBundle}
-					errors={this.state.htmlErrors}
-					lang={this.state.brew.lang}
-					onPageChange={this.handleBrewRendererPageChange}
-					currentEditorViewPageNum={this.state.currentEditorViewPageNum}
-					currentEditorCursorPageNum={this.state.currentEditorCursorPageNum}
-					currentBrewRendererPageNum={this.state.currentBrewRendererPageNum}
-					allowPrint={true}
-					templateBundle={asTemplateMap(this.state.themeBundle.templates)}
-					userTemplates={asTemplateMap(this.state.brew.templates)}
-					templates={this.state.brew.templates}
-				/>
-			</SplitPane>
+			<div className='content'>
+				<SplitPane onDragFinish={this.handleSplitMove}>
+					<Editor
+						ref={this.editor}
+						brew={this.state.brew}
+						onTextChange={this.handleTextChange}
+						onTemplateChange={this.handleTemplateChange}
+						onStyleChange={this.handleStyleChange}
+						onMetaChange={this.handleMetaChange}
+						reportError={this.errorReported}
+						renderer={this.state.brew.renderer}
+						userThemes={this.props.userThemes}
+						snippetBundle={this.state.themeBundle.snippets}
+						templateBundle={this.state.themeBundle.templates}
+						updateBrew={this.updateBrew}
+						onCursorPageChange={this.handleEditorCursorPageChange}
+						onViewPageChange={this.handleEditorViewPageChange}
+						currentEditorViewPageNum={this.state.currentEditorViewPageNum}
+						currentEditorCursorPageNum={this.state.currentEditorCursorPageNum}
+						currentBrewRendererPageNum={this.state.currentBrewRendererPageNum}
+					/>
+					<BrewRenderer
+						text={this.state.brew.text}
+						style={this.state.brew.style}
+						renderer={this.state.brew.renderer}
+						theme={this.state.brew.theme}
+						themeBundle={this.state.themeBundle}
+						errors={this.state.htmlErrors}
+						lang={this.state.brew.lang}
+						onPageChange={this.handleBrewRendererPageChange}
+						currentEditorViewPageNum={this.state.currentEditorViewPageNum}
+						currentEditorCursorPageNum={this.state.currentEditorCursorPageNum}
+						currentBrewRendererPageNum={this.state.currentBrewRendererPageNum}
+						allowPrint={true}
+						templateBundle={asTemplateMap(this.state.themeBundle.templates)}
+						userTemplates={asTemplateMap(this.state.brew.templates)}
+						templates={this.state.brew.templates}
+					/>
+				</SplitPane>
 			</div>
 		</div>;
 	}

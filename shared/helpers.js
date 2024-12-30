@@ -2,52 +2,57 @@ import _       from 'lodash';
 import yaml    from 'js-yaml';
 import request from '../client/homebrew/utils/request-middleware.js';
 
-// Convert the templates from a brew to a Snippets Structure.
-const templatesToSnippet = (menuTitle, templates, themeBundle)=>{
+
+const parseTemplatesStanza = (menuTitle, templates)=>{
 	const textSplit  = /^\\template/gm;
-	const mpAsSnippets = [];
-	// Templates from Themes first.
-	for (let themes of themeBundle) {
-		const pages = [];
-		if(themes.templates) {
-			for (let mp of themes.templates.split(textSplit)) {
-				let name = mp.split('\n')[0].trim();
-				if(name.length == 0) name = 'Blank';
-				pages.push({
-					name : name,
-					icon : '',
-					gen  : `\n\\page ${themes.name}:${name}\n`,
-				});
-			}
-		}
-		if(pages.length > 0) {
-			mpAsSnippets.push({
-				name        : themes.name,
-				icon        : '',
-				gen         : '',
-			    subsnippets : pages
-			});
-		}
-	}
-	// Local Templates
 	const pages = [];
 	if(templates){
 		for (let mp of templates.split(textSplit)) {
-			let name = mp.split('\n')[0];
+			let name = mp.split('\n')[0].trim();
+			// Strip out left and right flags
+			if(name.search(/^Right/i)== 0) name = name.slice(5).trim();
+			if(name.search(/^Left/i)==0) name = name.slice(4).trim();
 			if(name.length == 0) name = 'Blank';
-			pages.push({
-				name : name,
-				icon : '',
-				gen  : `\n\\page ${menuTitle}:${name}\n`,
-			});
+			// Test for "Dupes" when adding.
+			if(!pages.find((template)=>template.name.toUpperCase() == name.toUpperCase())){
+				pages.push({
+					name : name,
+					icon : '',
+					gen  : `\n\\page ${menuTitle}:${name}\n`,
+				});
+			}
 		}
 	}
-	if(pages.length) {
-		mpAsSnippets.push({
-			name        : menuTitle,
-			icon        : '',
-			subsnippets : pages
-		});
+	return pages;
+};
+
+// Convert the templates from a brew to a Snippets Structure.
+const templatesToSnippet = (menuTitle, templates, themeBundle)=>{
+	const mpAsSnippets = [];
+	// Templates from Themes first.
+	for (let themes of themeBundle) {
+		if(themes.templates) {
+			const pages = parseTemplatesStanza(menuTitle, themes.templates);
+			if(pages.length > 0) {
+				mpAsSnippets.push({
+					name        : themes.name,
+					icon        : '',
+					gen         : '',
+				    subsnippets : pages
+				});
+			}
+		}
+	}
+	// Local Templates
+	if(templates) {
+		const pages = parseTemplatesStanza(menuTitle, templates);
+		if(pages.length) {
+			mpAsSnippets.push({
+				name        : menuTitle,
+				icon        : '',
+				subsnippets : pages
+			});
+		}
 	}
 
 	return {
@@ -63,8 +68,17 @@ const splitTemplates = (templates)=>{
 	const templatesObj = [];
 	splitTemplates.forEach((page)=>{
 		const firstLine = page.split('\n')[0];
-		const firstLineClean = firstLine.slice(5).trim() || 'Blank';
-		templatesObj.push({ name: firstLineClean, template: page.slice(firstLine.length) });
+		let firstLineClean = firstLine.slice('\\template '.length).trim() || 'Blank';
+		let leftRightNone = '';
+		if(firstLineClean.search(/^Right/i)== 0) {
+			firstLineClean = firstLineClean.slice(5).trim();
+			leftRightNone = 'r';
+		}
+		if(firstLineClean.search(/^Left/i)==0) {
+			firstLineClean = firstLineClean.slice(4).trim();
+			leftRightNone = 'l';
+		}
+		templatesObj.push({ name: firstLineClean, leftRightNone: leftRightNone, template: page.slice(firstLine.length) });
 	});
 	return templatesObj;
 };
@@ -76,9 +90,10 @@ const asTemplateMap = (templates)=>{
 		const localTemplates = splitTemplates(templates);
 		for (let lt of localTemplates) {
 			resultTemplates.push({
-				theme    : '',
-				name     : lt.name,
-				template : lt.template
+				theme         : '',
+				name          : lt.name,
+				leftRightNone : lt.leftRightNone,
+				template      : lt.template
 			});
 		}
 	} else {
@@ -87,9 +102,10 @@ const asTemplateMap = (templates)=>{
 			const themeTemplates = splitTemplates(theme.templates);
 			for (let tt of themeTemplates) {
 				resultTemplates.push({
-					theme    : theme.name,
-					name     : tt.name,
-					template : tt.template
+					theme         : theme.name,
+					name          : tt.name,
+					leftRightNone : tt.leftRightNone,
+					template      : tt.template
 				});
 			}
 		}
