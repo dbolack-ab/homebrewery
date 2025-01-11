@@ -1,6 +1,6 @@
 require('./notificationPopup.less');
 import React, { useEffect, useState } from 'react';
-const request = require('../../utils/request-middleware.js');
+import request from '../../utils/request-middleware.js';
 
 import Dialog from '../../../components/dialog.jsx';
 
@@ -49,6 +49,7 @@ const NotificationPopup = ()=>{
 		));
 	};
 
+	if(!notifications.length) return;
 	return <Dialog className='notificationPopup' dismisskeys={dissmissKeyList} closeText={DISMISS_BUTTON} >
 		<div className='header'>
 			<i className='fas fa-info-circle info'></i>
