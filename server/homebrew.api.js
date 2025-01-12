@@ -4,6 +4,7 @@ import {model as HomebrewModel}      from './homebrew.model.js';
 import express                       from 'express';
 import zlib                          from 'zlib';
 import GoogleActions                 from './googleActions.js';
+import brewGit                       from './brewGit.js';
 import Markdown                      from '../shared/naturalcrit/markdown.js';
 import yaml                          from 'js-yaml';
 import asyncHandler                  from 'express-async-handler';
@@ -25,6 +26,8 @@ const isStaticTheme = (renderer, themeName)=>{
 // 		cb(brews);
 // 	});
 // };
+
+
 
 const MAX_TITLE_LENGTH = 100;
 
@@ -230,6 +233,21 @@ const api = {
 
 		return await GoogleActions.newGoogleBrew(oAuth2Client, newBrew);
 	},
+	newExternalStorageBrew : async (account, brew, externalBrewType, res)=>{
+		if(externalBrewType == 'brewGit') {
+			if(await brewGit.createBrewGit(brew.editId)) {
+				externalStorageId = brew.editId;
+				return true;
+			} else {
+				return false;
+			}
+
+		} else if(externalBrewType == 'google') {
+			const oAuth2Client = GoogleActions.authCheck(account, res);
+			const newBrew = api.excludeGoogleProps(brew);
+			return await GoogleActions.newGoogleBrew(oAuth2Client, newBrew);
+		}
+	},
 	newBrew : async (req, res)=>{
 		const brew = req.body;
 		const { saveToGoogle } = req.query;
@@ -331,7 +349,9 @@ const api = {
 
 		let brew = _.assign(brewFromServer, brewFromClient);
 		const googleId = brew.googleId;
-		const { saveToGoogle, removeFromGoogle } = req.query;
+		const externalStorageId = brew.externalStorageId;
+		const externalStorageType = brew.externalStorage;
+		const { saveToGoogle, removeFromGoogle, saveToExternalStorage, removeFromExternalStorage } = req.query;
 		let afterSave = async ()=>true;
 
 		brew.title = brew.title.trim();
@@ -349,20 +369,47 @@ const api = {
 			};
 
 			brew.googleId = undefined;
+		} else if(brew.externalStorageId && removeFromExternalStorage) {
+			// If the external storage id exists and we're removing the brew from external storage,
+			// set afterSave to delete the external brew storage and mark the brew's external storage id
+			// as undefined
+			if(brew.externalStorageId == 'brewGit') {
+				afterSave = async ()=>{
+					return await api.deleteExternalStorageBrew(req.account, externalStorageId, brew.editId,
+						externalStorageType, res)
+						.catch((err)=>{
+							console.error(err);
+							res.status(err?.status || err?.response?.status || 500).send(err.message || err);
+						});
+				};
+			}
+			brew.externalStorageId = undefined;
 		} else if(!brew.googleId && saveToGoogle) {
 			// If we don't have a google id and the user wants to save to google, create the google brew and set the google id on the brew
 			brew.googleId = await api.newGoogleBrew(req.account, api.excludeGoogleProps(brew), res);
 
 			if(!brew.googleId) return;
+		} else if(!brew.externalStorageId && saveToExternalStorage) {
+			// If we don't have an externalStorageID and the user wants to save to external Storage,
+			// create the external brew and set the external storage id on the brew
+			brew.externalStorageId = await api.newExternalStorageBrew(req.account, api.excludeGoogleProps(brew), externalStorageType, res, saveToExternalStorage);
+
+			if(!brew.externalStorageId) return;
+
 		} else if(brew.googleId) {
 			// If the google id exists and no other actions are being performed, update the google brew
 			const updated = await GoogleActions.updateGoogleBrew(api.excludeGoogleProps(brew), req.ip);
 
 			if(!updated) return;
+		} else if(brew.externalStorageId) {
+			// If the external storage id exists and no other actions are being performed, update the external brew
+			if(!api.updateExternalBrew(api.excludeGoogleProps(brew),
+				externalStorageType, req.ip)) return;
 		}
 
-		if(brew.googleId) {
-			// If the google id exists after all those actions, exclude the props that are stored in google and aren't needed for rendering the brew items
+		if(brew.googleId || brew.externalStorageId) {
+			// If the google id exists after all those actions, exclude the props that are stored in
+			// google and aren't needed for rendering the brew items
 			api.excludeStubProps(brew);
 		} else {
 			// Compress brew text to binary before saving
@@ -400,10 +447,29 @@ const api = {
 
 		res.status(200).send(saved);
 	},
+	updateExternalBrew : async (brew, externalStorageType, ip)=>{
+		let updated;
+		if(externalStorageType == 'brewGit') {
+			updated = brewGit.putBrewGitText(brew);
+		} else if(externalStorageType == 'google') {
+			updated = await GoogleActions.updateGoogleBrew(api.excludeGoogleProps(brew), ip);
+		}
+		if(!updated) return;
+	},
 	deleteGoogleBrew : async (account, id, editId, res)=>{
 		const auth = await GoogleActions.authCheck(account, res);
 		await GoogleActions.deleteGoogleBrew(auth, id, editId);
 		return true;
+	},
+	deleteExternalStorageBrew : async (account, id, editId, externalBrewType, res)=>{
+		if(externalBrewType == 'brewGit') {
+			return await brewGit.deleteBrew(editId);
+		} else if(externalBrewType == 'google') {
+			const auth = await GoogleActions.authCheck(account, res);
+			await GoogleActions.deleteGoogleBrew(auth, id, editId);
+			return true;
+		}
+		return false;
 	},
 	deleteBrew : async (req, res, next)=>{
 		// Delete an orphaned stub if its Google brew doesn't exist
