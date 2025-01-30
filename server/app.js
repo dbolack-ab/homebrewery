@@ -117,6 +117,7 @@ const welcomeTextLegacy = fs.readFileSync('client/homebrew/pages/homePage/welcom
 const migrateText       = fs.readFileSync('client/homebrew/pages/homePage/migrate.md', 'utf8');
 const changelogText     = fs.readFileSync('changelog.md', 'utf8');
 const faqText           = fs.readFileSync('faq.md', 'utf8');
+const tutorialText      = fs.readFileSync('markdownPlusTutorial.md', 'utf8');
 
 String.prototype.replaceAll = function(s, r){return this.split(s).join(r);};
 
@@ -214,6 +215,24 @@ app.get('/faq', async (req, res, next)=>{
 	req.ogMeta = { ...defaultMetaTags,
 		title       : 'FAQ',
 		description : 'Frequently Asked Questions'
+	};
+
+	splitTextStyleAndMetadata(req.brew);
+	return next();
+});
+
+// markdown plus basics
+app.get('/tutorial', async (req, res, next)=>{
+	req.brew = {
+		title    : 'Markdown+ Tutorial',
+		text     : tutorialText,
+		renderer : 'V3',
+		theme    : 'Blank'
+	},
+
+	req.ogMeta = { ...defaultMetaTags,
+		title       : 'Markdown+ Tutorial',
+		description : 'Markdown+ Tutorial'
 	};
 
 	splitTextStyleAndMetadata(req.brew);

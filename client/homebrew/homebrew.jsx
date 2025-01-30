@@ -79,6 +79,7 @@ const Homebrew = createClass({
 						<Route path='/vault' element={<WithRoute el={VaultPage}/>}/>
 						<Route path='/changelog' element={<WithRoute el={SharePage} brew={this.props.brew} disableMeta={true} />} />
 						<Route path='/faq' element={<WithRoute el={SharePage} brew={this.props.brew} disableMeta={true} />} />
+						<Route path='/tutorial' element={<WithRoute el={SharePage} brew={this.props.brew} disableMeta={true} />} />
 						<Route path='/migrate' element={<WithRoute el={SharePage} brew={this.props.brew} disableMeta={true} />} />
 						<Route path='/account' element={<WithRoute el={AccountPage} brew={this.props.brew} accountDetails={this.props.brew.accountDetails} />} />
 						<Route path='/legacy' element={<WithRoute el={HomePage} brew={this.props.brew} />} />
