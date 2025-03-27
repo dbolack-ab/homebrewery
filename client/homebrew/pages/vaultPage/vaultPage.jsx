@@ -1,3 +1,5 @@
+/*eslint max-lines: ["warn", {"max": 400, "skipBlankLines": true, "skipComments": true}]*/
+/*eslint max-params:["warn", { max: 10 }], */
 require('./vaultPage.less');
 
 const React = require('react');
@@ -13,17 +15,19 @@ const BrewItem      = require('../basePages/listPage/brewItem/brewItem.jsx');
 const SplitPane     = require('../../../../shared/naturalcrit/splitPane/splitPane.jsx');
 const ErrorIndex    = require('../errorPage/errors/errorIndex.js');
 
-const request = require('../../utils/request-middleware.js');
+import request from '../../utils/request-middleware.js';
 
 const VaultPage = (props)=>{
 	const [pageState, setPageState] = useState(parseInt(props.query.page) || 1);
+
+	const [sortState, setSort] = useState(props.query.sort || 'title');
+	const [dirState, setdir] = useState(props.query.dir || 'asc');
 
 	//Response state
 	const [brewCollection, setBrewCollection] = useState(null);
 	const [totalBrews, setTotalBrews]         = useState(null);
 	const [searching, setSearching]           = useState(false);
 	const [error, setError]                   = useState(null);
-
 
 	const titleRef        = useRef(null);
 	const authorRef       = useRef(null);
@@ -34,7 +38,7 @@ const VaultPage = (props)=>{
 
 	useEffect(()=>{
 		disableSubmitIfFormInvalid();
-		loadPage(pageState, true);
+		loadPage(pageState, true, props.query.sort, props.query.dir);
 	}, []);
 
 	const updateStateWithBrews = (brews, page)=>{
@@ -43,7 +47,7 @@ const VaultPage = (props)=>{
 		setSearching(false);
 	};
 
-	const updateUrl = (titleValue, authorValue, countValue, v3Value, legacyValue, page)=>{
+	const updateUrl = (titleValue, authorValue, countValue, v3Value, legacyValue, page, sort, dir)=>{
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
 
@@ -53,21 +57,23 @@ const VaultPage = (props)=>{
 		urlParams.set('v3', v3Value);
 		urlParams.set('legacy', legacyValue);
 		urlParams.set('page', page);
+		urlParams.set('sort', sort);
+		urlParams.set('dir', dir);
 
 		url.search = urlParams.toString();
 		window.history.replaceState(null, '', url.toString());
 	};
 
-	const performSearch = async (title, author, count, v3, legacy, page)=>{
-		updateUrl(title, author, count, v3, legacy, page);
+	const performSearch = async (title, author, count, v3, legacy, page, sort, dir)=>{
+		updateUrl(title, author, count, v3, legacy, page, sort, dir);
 
-		const response = await request.get(
-			`/api/vault?title=${title}&author=${author}&v3=${v3}&legacy=${legacy}&count=${count}&page=${page}`
-		).catch((error)=>{
-			console.log('error at loadPage: ', error);
-			setError(error);
-			updateStateWithBrews([], 1);
-		});
+		const response = await request
+			.get(`/api/vault?title=${title}&author=${author}&v3=${v3}&legacy=${legacy}&count=${count}&page=${page}&sort=${sort}&dir=${dir}`)
+			.catch((error)=>{
+				console.log('error at loadPage: ', error);
+				setError(error);
+				updateStateWithBrews([], 1);
+			});
 
 		if(response.ok)
 			updateStateWithBrews(response.body.brews, page);
@@ -76,9 +82,8 @@ const VaultPage = (props)=>{
 	const loadTotal = async (title, author, v3, legacy)=>{
 		setTotalBrews(null);
 
-		const response = await request.get(
-			`/api/vault/total?title=${title}&author=${author}&v3=${v3}&legacy=${legacy}`
-		).catch((error)=>{
+		const response = await request.get(`/api/vault/total?title=${title}&author=${author}&v3=${v3}&legacy=${legacy}`)
+		.catch((error)=>{
 			console.log('error at loadTotal: ', error);
 			setError(error);
 			updateStateWithBrews([], 1);
@@ -88,20 +93,25 @@ const VaultPage = (props)=>{
 			setTotalBrews(response.body.totalBrews);
 	};
 
-	const loadPage = async (page, updateTotal)=>{
-		if(!validateForm())
-			return;
+	const loadPage = async (page, updateTotal, sort, dir)=>{
+		if(!validateForm()) return;
 
 		setSearching(true);
 		setError(null);
 
-		const title  = titleRef.current.value || '';
-		const author = authorRef.current.value || '';
-		const count  = countRef.current.value || 10;
-		const v3     = v3Ref.current.checked != false;
-		const legacy = legacyRef.current.checked != false;
+		const title      = titleRef.current.value || '';
+		const author     = authorRef.current.value || '';
+		const count      = countRef.current.value || 10;
+		const v3         = v3Ref.current.checked != false;
+		const legacy     = legacyRef.current.checked != false;
+		const sortOption = sort || 'title';
+		const dirOption  = dir || 'asc';
+		const pageProp   = page || 1;
 
-		performSearch(title, author, count, v3, legacy, page);
+		setSort(sortOption);
+		setdir(dirOption);
+
+		performSearch(title, author, count, v3, legacy, pageProp, sortOption, dirOption);
 
 		if(updateTotal)
 			loadTotal(title, author, v3, legacy);
@@ -237,7 +247,7 @@ const VaultPage = (props)=>{
 					</li>
 					<li>
 						Some common words like "a", "after", "through", "itself", "here", etc.,
-						are ignored in searches. The full list can be found &nbsp;
+						are ignored in searches. The full list can be found&nbsp;
 						<a href='https://github.com/mongodb/mongo/blob/0e3b3ca8480ddddf5d0105d11a94bd4698335312/src/mongo/db/fts/stop_words_english.txt'>
 							here
 						</a>
@@ -248,10 +258,37 @@ const VaultPage = (props)=>{
 		</div>
 	);
 
-	const renderPaginationControls = ()=>{
-		if(!totalBrews) return null;
+	const renderSortOption = (optionTitle, optionValue)=>{
+		const oppositeDir = dirState === 'asc' ? 'desc' : 'asc';
 
-		const countInt = parseInt(props.query.count || 20);
+		return (
+			<div className={`sort-option ${sortState === optionValue ? `active` : ''}`}>
+				<button onClick={()=>loadPage(1, false, optionValue, oppositeDir)}>
+					{optionTitle}
+				</button>
+				{sortState === optionValue && (
+					<i className={`sortDir fas ${dirState === 'asc' ? 'fa-sort-up' : 'fa-sort-down'}`} />
+				)}
+			</div>
+		);
+	};
+
+	const renderSortBar = ()=>{
+
+		return (
+			<div className='sort-container'>
+				{renderSortOption('Title', 'title', props.query.dir)}
+				{renderSortOption('Created Date', 'createdAt', props.query.dir)}
+				{renderSortOption('Updated Date', 'updatedAt', props.query.dir)}
+				{renderSortOption('Views', 'views', props.query.dir)}
+			</div>
+		);
+	};
+
+	const renderPaginationControls = ()=>{
+		if(!totalBrews || totalBrews < 10) return null;
+
+		const countInt = parseInt(brewCollection.length || 20);
 		const totalPages = Math.ceil(totalBrews / countInt);
 
 		let startPage, endPage;
@@ -271,10 +308,8 @@ const VaultPage = (props)=>{
 			.map((_, index)=>(
 				<a
 					key={startPage + index}
-					className={`pageNumber ${
-						pageState === startPage + index ? 'currentPage' : ''
-					}`}
-					onClick={()=>loadPage(startPage + index, false)}
+					className={`pageNumber ${pageState === startPage + index ? 'currentPage' : ''}`}
+					onClick={()=>loadPage(startPage + index, false, sortState, dirState)}
 				>
 					{startPage + index}
 				</a>
@@ -284,7 +319,7 @@ const VaultPage = (props)=>{
 			<div className='paginationControls'>
 				<button
 					className='previousPage'
-					onClick={()=>loadPage(pageState - 1, false)}
+					onClick={()=>loadPage(pageState - 1, false, sortState, dirState)}
 					disabled={pageState === startPage}
 				>
 					<i className='fa-solid fa-chevron-left'></i>
@@ -293,7 +328,7 @@ const VaultPage = (props)=>{
 					{startPage > 1 && (
 						<a
 							className='pageNumber firstPage'
-							onClick={()=>loadPage(1, false)}
+							onClick={()=>loadPage(1, false, sortState, dirState)}
 						>
 							1 ...
 						</a>
@@ -302,7 +337,7 @@ const VaultPage = (props)=>{
 					{endPage < totalPages && (
 						<a
 							className='pageNumber lastPage'
-							onClick={()=>loadPage(totalPages, false)}
+							onClick={()=>loadPage(totalPages, false, sortState, dirState)}
 						>
 							... {totalPages}
 						</a>
@@ -310,7 +345,7 @@ const VaultPage = (props)=>{
 				</ol>
 				<button
 					className='nextPage'
-					onClick={()=>loadPage(pageState + 1, false)}
+					onClick={()=>loadPage(pageState + 1, false, sortState, dirState)}
 					disabled={pageState === totalPages}
 				>
 					<i className='fa-solid fa-chevron-right'></i>
@@ -320,7 +355,7 @@ const VaultPage = (props)=>{
 	};
 
 	const renderFoundBrews = ()=>{
-		if(searching) {
+		if(searching && !brewCollection) {
 			return (
 				<div className='foundBrews searching'>
 					<h3 className='searchAnim'>Searching</h3>
@@ -360,6 +395,7 @@ const VaultPage = (props)=>{
 					{`Brews found: `}
 					<span>{totalBrews}</span>
 				</span>
+				{brewCollection.length > 10 && renderPaginationControls()}
 				{brewCollection.map((brew, index)=>{
 					return (
 						<BrewItem
@@ -376,15 +412,15 @@ const VaultPage = (props)=>{
 	};
 
 	return (
-		<div className='vaultPage'>
+		<div className='sitePage vaultPage'>
 			<link href='/themes/V3/Blank/style.css' rel='stylesheet' />
 			<link href='/themes/V3/5ePHB/style.css' rel='stylesheet' />
 			{renderNavItems()}
 			<div className='content'>
 				<SplitPane showDividerButtons={false}>
 					<div className='form dataGroup'>{renderForm()}</div>
-
 					<div className='resultsContainer dataGroup'>
+						{renderSortBar()}
 						{renderFoundBrews()}
 					</div>
 				</SplitPane>

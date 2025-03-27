@@ -8,5 +8,7 @@
 	"local_environments" : ["docker", "local"],
 	"publicUrl" : "https://homebrewery.naturalcrit.com",
 	"proxyHost" : "https://172.17.0.1",
-	"proxyPort" : 3128
+	"proxyPort" : 3128,
+	"hb_images" : null,
+	"hb_fonts" : null
 }
