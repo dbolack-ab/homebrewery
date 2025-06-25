@@ -11,6 +11,8 @@ import { nanoid }                    from 'nanoid';
 import { splitTextStyleAndMetadata, 
 		 brewSnippetsToJSON }        from '../shared/helpers.js';
 import checkClientVersion            from './middleware/check-client-version.js';
+import { default as md5 }              from 'md5';
+import {createPatch} from 'diff';
 
 
 const router = express.Router();
@@ -342,6 +344,25 @@ const api = {
 			res.setHeader('Content-Type', 'application/json');
 			return res.status(409).send(JSON.stringify({ message: `The brew has been changed on a different device. Please save your changes elsewhere, refresh, and try again.` }));
 		}
+
+		// Test md5s
+
+		const serverCopy = structuredClone(brewFromServer);
+		splitTextStyleAndMetadata(serverCopy);
+		console.log(serverCopy);
+		console.log(createPatch('foo', serverCopy.style, brewFromClient.style));
+
+		if(brewFromClient.diffText?.length>0) {
+			const serverTextMD5  = md5(serverCopy.text);
+			const serverStyleMD5 = md5(serverCopy.style);
+
+			const reqTextMD5  = brewFromClient.diffText.split('\n')[2];
+			const reqStyleMD5 = brewFromClient.diffStyle.split('\n')[2];
+
+			console.log(`Text server:${serverTextMD5} - ${reqTextMD5} - ${md5(brewFromClient?.text)}`);
+			console.log(`Style server:${serverStyleMD5} - ${reqStyleMD5} - ${md5(brewFromClient?.style)}`);
+		}
+
 
 		let brew = _.assign(brewFromServer, brewFromClient);
 		const googleId = brew.googleId;

@@ -1,4 +1,7 @@
 import { initCustomStore } from './customIDBStore.js';
+import { createPatch } from 'diff';
+import { default as md5 } from 'md5';
+
 
 export const HISTORY_PREFIX = 'HOMEBREWERY-HISTORY';
 export const HISTORY_SLOTS = 5;
@@ -100,6 +103,15 @@ export async function updateHistory(brew) {
 			break;
 		}
 	};
+
+	const diffText  = createPatch(brew.shareId, history[1].text, history[0].text, `md5-1: ${md5(history[1].text)}`, `md5-0: ${md5(history[0].text)}`);
+	const diffStyle = createPatch(brew.shareId, history[1].style, history[0].style, `md5-1: ${md5(history[1].style)}`, `md5-0: ${md5(history[0].style)}`);
+
+	return {
+	 diffText  : diffText,
+	 diffStyle : diffStyle
+	};
+
 };
 
 export async function versionHistoryGarbageCollection(){

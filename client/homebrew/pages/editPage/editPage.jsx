@@ -246,13 +246,15 @@ const EditPage = createClass({
 			htmlErrors : Markdown.validate(prevState.brew.text)
 		}));
 
-		await updateHistory(this.state.brew).catch(console.error);
+		const diffPackage = await updateHistory(this.state.brew).catch(console.error);
 		await versionHistoryGarbageCollection().catch(console.error);
 
 		const transfer = this.state.saveGoogle == _.isNil(this.state.brew.googleId);
 
 		const brew = this.state.brew;
 		brew.pageCount = ((brew.renderer=='legacy' ? brew.text.match(/\\page/g) : brew.text.match(/^\\page$/gm)) || []).length + 1;
+		brew.diffText  = diffPackage.diffText;
+		brew.diffStyle = diffPackage.diffStyle;
 
 		const params = `${transfer ? `?${this.state.saveGoogle ? 'saveToGoogle' : 'removeFromGoogle'}=true` : ''}`;
 		const res = await request
