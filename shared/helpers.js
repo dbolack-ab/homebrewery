@@ -4,6 +4,7 @@ import yaml    from 'js-yaml';
 import request from '../client/homebrew/utils/request-middleware.js';
 import Markdown from '../shared/markdown.js';
 import packageJSON from '../package.json' with { type: 'json' };
+import jszip     from 'jszip';
 
 const PAGEBREAK_REGEX_V3 = /^(?=\\page(?:break)?(?: *{[^\n{}]*})?$)/m;
 const PAGEBREAK_REGEX_LEGACY = /\\page(?:break)?/m;
@@ -211,6 +212,17 @@ const simulateRenderPage = (pageText, index, renderer)=>{
 	}
 };
 
+const createZip() = async(html)=>{
+	const archive = new jszip();
+
+	const images = archive.folder('images');
+	const fonts  = archive.folder('fonts');
+	const css    = archive.folder('css');
+
+	
+
+
+};
 
 const simulateRender = async (req, res, next)=>{
 	let htmlHead = '';
