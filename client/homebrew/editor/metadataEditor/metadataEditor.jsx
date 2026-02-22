@@ -1,19 +1,16 @@
 /* eslint-disable max-lines */
-require('./metadataEditor.less');
-const React = require('react');
-const createClass = require('create-react-class');
-const _     = require('lodash');
+import './metadataEditor.less';
+import React from 'react';
+import createReactClass from 'create-react-class';
+import _ from 'lodash';
 import request from '../../utils/request-middleware.js';
-const Combobox = require('client/components/combobox.jsx');
-const TagInput = require('../tagInput/tagInput.jsx');
+import Combobox from '../../../components/combobox.jsx';
+import TagInput from '../tagInput/tagInput.jsx';
 
+import Themes from 'themes/themes.json';
+import validations from './validations.js';
 
-const Themes = require('themes/themes.json');
-const validations = require('./validations.js');
-
-const SYSTEMS = ['5e', '4e', '3.5e', 'Pathfinder'];
-
-const homebreweryThumbnail = require('../../thumbnail.png');
+import homebreweryThumbnail from '../../thumbnail.png';
 
 const callIfExists = (val, fn, ...args)=>{
 	if(val[fn]) {
@@ -21,7 +18,7 @@ const callIfExists = (val, fn, ...args)=>{
 	}
 };
 
-const MetadataEditor = createClass({
+const MetadataEditor = createReactClass({
 	displayName     : 'MetadataEditor',
 	getDefaultProps : function() {
 		return {
@@ -34,7 +31,6 @@ const MetadataEditor = createClass({
 				tags        : [],
 				published   : false,
 				authors     : [],
-				systems     : [],
 				renderer    : 'legacy',
 				theme       : '5ePHB',
 				lang        : 'en'
@@ -92,15 +88,6 @@ const MetadataEditor = createClass({
 		}
 	},
 
-	handleSystem : function(system, e){
-		if(e.target.checked){
-			this.props.metadata.systems.push(system);
-		} else {
-			this.props.metadata.systems = _.without(this.props.metadata.systems, system);
-		}
-		this.props.onChange(this.props.metadata);
-	},
-
 	handleRenderer : function(renderer, e){
 		if(e.target.checked){
 			this.props.metadata.renderer = renderer;
@@ -154,18 +141,6 @@ const MetadataEditor = createClass({
 					window.location.href = '/';
 				}
 			});
-	},
-
-	renderSystems : function(){
-		return _.map(SYSTEMS, (val)=>{
-			return <label key={val}>
-				<input
-					type='checkbox'
-					checked={_.includes(this.props.metadata.systems, val)}
-					onChange={(e)=>this.handleSystem(val, e)} />
-				{val}
-			</label>;
-		});
 	},
 
 	renderPublish : function(){
@@ -305,7 +280,7 @@ const MetadataEditor = createClass({
 	},
 
 	renderRenderOptions : function(){
-		return <div className='field systems'>
+		return <div className='field renderers'>
 			<label>Renderer</label>
 			<div className='value'>
 				<label key='legacy'>
@@ -364,18 +339,14 @@ const MetadataEditor = createClass({
 				{this.renderThumbnail()}
 			</div>
 
-			<TagInput label='tags' valuePatterns={[/^(?:(?:group|meta|system|type):)?[A-Za-z0-9][A-Za-z0-9 \/.\-]{0,40}$/]}
+			<TagInput
+				label='tags'
+				valuePatterns={/^\s*(?:(?:group|meta|system|type)\s*:\s*)?[A-Za-z0-9][A-Za-z0-9 \/\\.&_\-]{0,40}\s*$/}
 				placeholder='add tag' unique={true}
 				values={this.props.metadata.tags}
+				smallText='You may start tags with "type", "system", "group" or "meta" followed by a colon ":", these will be colored in your userpage.'
 				onChange={(e)=>this.handleFieldChange('tags', e)}
 			/>
-
-			<div className='field systems'>
-				<label>systems</label>
-				<div className='value'>
-					{this.renderSystems()}
-				</div>
-			</div>
 
 			{this.renderLanguageDropdown()}
 
@@ -387,11 +358,13 @@ const MetadataEditor = createClass({
 
 			{this.renderAuthors()}
 
-			<TagInput label='invited authors' valuePatterns={[/.+/]}
+			<TagInput
+				label='invited authors'
+				valuePatterns={/.+/}
 				validators={[(v)=>!this.props.metadata.authors?.includes(v)]}
 				placeholder='invite author' unique={true}
 				values={this.props.metadata.invitedAuthors}
-				notes={['Invited author usernames are case sensitive.', 'After adding an invited author, send them the edit link. There, they can choose to accept or decline the invitation.']}
+				smallText='Invited author usernames are case sensitive. After adding an invited author, send them the edit link. There, they can choose to accept or decline the invitation.'
 				onChange={(e)=>this.handleFieldChange('invitedAuthors', e)}
 			/>
 
@@ -411,4 +384,4 @@ const MetadataEditor = createClass({
 	}
 });
 
-module.exports = MetadataEditor;
+export default MetadataEditor;

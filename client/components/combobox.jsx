@@ -1,9 +1,9 @@
-const React = require('react');
-const createClass = require('create-react-class');
-const _ = require('lodash');
-require('./combobox.less');
+import React from 'react';
+import createReactClass from 'create-react-class';
+import _ from 'lodash';
+import './combobox.less';
 
-const Combobox = createClass({
+const Combobox = createReactClass({
 	displayName     : 'Combobox',
 	getDefaultProps : function() {
 		return {
@@ -16,6 +16,7 @@ const Combobox = createClass({
 				suggestMethod           : 'includes',
 				filterOn                : []  // should allow as array to filter on multiple attributes, or even custom filter
 			},
+			valuePatterns: /.+/
 		};
 	},
 	getInitialState : function() {
@@ -74,12 +75,19 @@ const Combobox = createClass({
 					type='text'
 					onChange={(e)=>this.handleInput(e)}
 					value={this.state.value || ''}
+					pattern={this.props.valuePatterns}
 					placeholder={this.props.placeholder}
 					onBlur={(e)=>{
 						if(!e.target.checkValidity()){
 							this.setState({
 								value : this.props.default
 							});
+						}
+					}}
+					onKeyDown={(e)=>{
+						if (e.key === "Enter") {
+							e.preventDefault();
+							this.props.onEntry(e);
 						}
 					}}
 				/>
@@ -126,4 +134,4 @@ const Combobox = createClass({
 	}
 });
 
-module.exports = Combobox;
+export default Combobox;
