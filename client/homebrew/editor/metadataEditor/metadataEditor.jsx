@@ -213,7 +213,7 @@ const MetadataEditor = createReactClass({
 				</div>;
 		} else {
 			dropdown =
-				<div className='value'>
+				<div className='value' data-tooltip-top='Select from the list below (built-in themes and brews you have tagged "meta:theme"), or paste in the Share URL or Share ID of any brew.'>
 					<Combobox trigger='click'
 						className='themes-dropdown'
 						default={currentThemeDisplay}
@@ -231,7 +231,6 @@ const MetadataEditor = createReactClass({
 							filterOn                : ['value', 'title']
 						}}
 					/>
-					<small>Select from the list below (built-in themes and brews you have tagged "meta:theme"), or paste in the Share URL or Share ID of any brew.</small>
 				</div>;
 		}
 
