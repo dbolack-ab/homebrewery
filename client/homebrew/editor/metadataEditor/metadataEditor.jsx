@@ -362,7 +362,7 @@ const MetadataEditor = createReactClass({
 
 			{this.renderAuthors()}
 
-			<div className="field tags">
+			<div className="field invitedAuthors">
 				<label>Invited authors</label>
 				<div className="value">
 					<TagInput
