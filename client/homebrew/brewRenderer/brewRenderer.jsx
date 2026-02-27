@@ -204,15 +204,19 @@ const BrewRenderer = (props)=>{
 					styles     = _.mapKeys(styles, (v, k)=>k.startsWith('--') ? k : _.camelCase(k)); // Convert CSS to camelCase for React
 					classes    = [classes, injectedTags.classes].join(' ').trim();
 					attributes = injectedTags.attributes;
-					if (attributes && Object.hasOwn(attributes, 'hbtemplate')) {
-						pageTemplates[index] = attributes['hbtemplate'];
+					if(global.enable_v4) {
+						if (attributes && Object.hasOwn(attributes, 'hbtemplate')) {
+							pageTemplates[index] = attributes['hbtemplate'];
+						}
 					}
 				}
-				// If we don't have a template for this page, look backwards until one is found or the first page.
-				if(!pageTemplates[index]) {
-					for (let i=index;i>=0; i--) {
-						// If one is found, add the template attribute
-						if (pageTemplates[i]) attributes['hbtemplate'] = pageTemplates[i];
+				if(global.enable_v4) {
+					// If we don't have a template for this page, look backwards until one is found or the first page.
+					if(!pageTemplates[index]) {
+						for (let i=index;i>=0; i--) {
+							// If one is found, add the template attribute
+							if (pageTemplates[i]) attributes['hbtemplate'] = pageTemplates[i];
+						}
 					}
 				}
 				pageText = pageText.includes('\n') ? pageText.substring(pageText.indexOf('\n') + 1) : ''; // Remove the \page line
