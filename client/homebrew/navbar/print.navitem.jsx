@@ -1,6 +1,6 @@
 import React from 'react';
 import Nav from './nav.jsx';
-import { printCurrentBrew, scrapeBrewHTML, scrapeBrewZip } from '../../../shared/helpers.js';
+import { printCurrentBrew, scrapeBrewHTML, scrapeBrewZip } from '@shared/helpers.js';
 
 export default function(props){
 	return <Nav.dropdown>

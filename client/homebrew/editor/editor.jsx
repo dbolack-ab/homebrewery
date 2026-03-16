@@ -4,7 +4,7 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 import _ from 'lodash';
 import dedent from 'dedent';
-import Markdown from '../../../shared/markdown.js';
+import Markdown from '@shared/markdown.js';
 
 import CodeEditor from '../../components/codeEditor/codeEditor.jsx';
 import SnippetBar from './snippetbar/snippetbar.jsx';
@@ -88,7 +88,7 @@ const Editor = createReactClass({
 		const snippetBar = document.querySelector('.editor > .snippetBar');
 		if(!snippetBar) return;
 
-		this.resizeObserver = new ResizeObserver(entries=>{
+		this.resizeObserver = new ResizeObserver((entries)=>{
 			const height = document.querySelector('.editor > .snippetBar').offsetHeight;
 			this.setState({ snippetBarHeight: height });
 		});
