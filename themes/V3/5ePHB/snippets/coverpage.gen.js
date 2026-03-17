@@ -148,7 +148,7 @@ export default {
 			For use with any fantasy roleplaying ruleset. Play the best game of your life!
 
 			![background image](${domain}/assets/ruined_tower.webp){position:absolute,bottom:0,right:-250px,height:100%}
-			<!-- Art: Italian Coast Scene with Ruined Tower, 1838, Thomas Cole -->
+			<!-- Art: Italian Coast Scene with Ruined Tower, 1838, by Thomas Cole -->
 
 			{{logo
 			![](${domain}/assets/naturalCritLogoWhite.svg)
