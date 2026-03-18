@@ -37,8 +37,7 @@ export default {
 		}[side];
 		return dedent`
 			{{imageMaskEdge${_.random(1, 8)},--offset:10%,--rotation:${rotation}
-			  ![image description](${domain}/assets/roman_theatre.webp)${styles()}
-			  <!-- Art: The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont -->
+			  ![The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont](${domain}/assets/roman_theatre.webp)${styles()}
 			}}
 			<!-- Use --offset to shift the mask away from page center (can use cm instead of %)
 			     Use --rotation to set rotation angle in degrees. -->\n\n`;
@@ -49,8 +48,7 @@ export default {
 		const offsetY = (y == 'top'  ? '50%' : '-50%');
 		return dedent`
 			{{imageMaskCorner${_.random(1, 37)},--offsetX:${offsetX},--offsetY:${offsetY},--rotation:0
-			  ![image description](${domain}/assets/roman_theatre.webp){height:100%}
-			  <!-- Art: The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont -->
+			  ![The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont](${domain}/assets/roman_theatre.webp){height:100%}
 			}}
 			<!-- Use --offsetX to shift the mask left or right (can use cm instead of %)
 			     Use --offsetY to shift the mask up or down
