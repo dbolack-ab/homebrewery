@@ -6,8 +6,7 @@ export default {
 	center : ()=>{
 		return dedent`
 			{{imageMaskCenter${_.random(1, 16)},--offsetX:0%,--offsetY:0%,--rotation:0
-			  ![image description](${domain}/assets/roman_theatre.webp){height:100%}
-			  <!-- Art: The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont -->
+			  ![The Roman Theater at Taormina, 1828, by Louise-Joséphine sarazin de Belmont](${domain}/assets/roman_theatre.webp){height:100%}
 			}}
 			<!-- Use --offsetX to shift the mask left or right (can use cm instead of %)
 			     Use --offsetY to shift the mask up or down
