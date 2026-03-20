@@ -304,6 +304,28 @@ const BrewRenderer = (props)=>{
 
 	const toolbarEl = <ToolBar displayOptions={displayOptions} onDisplayOptionsChange={handleDisplayOptionsChange} visiblePages={state.visiblePages.length > 0 ? state.visiblePages : [state.centerPage]} totalPages={rawPages.length} headerState={headerState} setHeaderState={setHeaderState}/>;
 
+	const brewRenderFrameContents = (
+		<>
+			<div className='brewRenderer'
+				onKeyDown={handleControlKeys}
+				tabIndex={-1}
+			>
+
+				{/* Apply CSS from Style tab and render pages from Markdown tab */}
+				{state.isMounted
+					&&
+					<>
+						{renderedStyle}
+						<div className={`pages ${displayOptions.startOnRight ? 'recto' : 'verso'}	${displayOptions.spread}`} lang={`${props.lang || 'en'}`} style={pagesStyle} ref={pagesRef}>
+							{renderedPages}
+						</div>
+					</>
+				}
+			</div>
+			{headerState ? <HeaderNav ref={pagesRef} /> : <></>}
+		</>
+	);
+
 	return (
 		<>
 			{/*render dummy page while iFrame is mounting.*/}
@@ -329,23 +351,7 @@ const BrewRenderer = (props)=>{
 				contentDidMount={frameDidMount}
 				onClick={()=>{emitClick();}}
 			>
-				<div className='brewRenderer'
-					onKeyDown={handleControlKeys}
-					tabIndex={-1}
-				>
-
-					{/* Apply CSS from Style tab and render pages from Markdown tab */}
-					{state.isMounted
-						&&
-						<>
-							{renderedStyle}
-							<div className={`pages ${displayOptions.startOnRight ? 'recto' : 'verso'}	${displayOptions.spread}`} lang={`${props.lang || 'en'}`} style={pagesStyle} ref={pagesRef}>
-								{renderedPages}
-							</div>
-						</>
-					}
-				</div>
-				{headerState ? <HeaderNav ref={pagesRef} /> : <></>}
+				{brewRenderFrameContents}
 			</Frame>
 			{state.isMounted &&
 			  <div id='brewRendered'></div>
