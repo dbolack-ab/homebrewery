@@ -34,8 +34,11 @@
   				document.title = `${prefix}${title} - The Homebrewery`;
   			}
 
-  			const isAdmin = window.location.pathname.startsWith('/admin');
-  			import(isAdmin ? '/client/admin/main.jsx' : '/client/homebrew/main.jsx');
+			if (window.location.pathname.startsWith('/admin')) {
+				import('/client/admin/main.jsx');
+			} else {
+				import('/client/homebrew/main.jsx');
+			}
 		</script>
 	</body>
 </html>
