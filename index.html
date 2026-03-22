@@ -23,11 +23,13 @@
 
   			let prefix = '';
 
-  			if (url.includes('://homebrewery-pr-')) {
+  			if (url.includes('://homebrewery-stage.')) {
+  				prefix = `Stage `;
+  			} else if (url.includes('://homebrewery-pr-')) {
   				const match = url.match(/pr-(\d+)/);
   				if (match) prefix = `PR-${match[1]} `;
   			} else if (url.includes('://localhost')) {
-  				prefix = 'LOCAL ';
+  				prefix = 'Local ';
   			}
 
   			if (title) {
