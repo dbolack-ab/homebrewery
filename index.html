@@ -32,7 +32,9 @@
 
   			if (title) {
   				document.title = `${prefix}${title} - The Homebrewery`;
-  			}
+  			} else {
+				document.title = `${prefix} - The Homebrewery`;
+			}
 
 			if (window.location.pathname.startsWith('/admin')) {
 				import('/client/admin/main.jsx');
