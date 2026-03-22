@@ -19,7 +19,9 @@
 		<main id="reactRoot"></main>
 
 		<script type="module">
-  			const { config: { baseUrl: url }, brew: { title } } = window.__INITIAL_PROPS__;
+  			const props = window.__INITIAL_PROPS__ || {};
+			const url = props.config?.baseUrl;
+			const title = props.brew?.title;
 
   			let prefix = '';
 
