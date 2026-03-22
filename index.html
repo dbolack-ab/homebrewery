@@ -19,6 +19,23 @@
 		<main id="reactRoot"></main>
 
 		<script type="module">
+			const url = window.__INITIAL_PROPS__.config.baseUrl;
+			console.log(window.__INITIAL_PROPS__);
+			const title = window.__INITIAL_PROPS__.brew.title;
+
+			if(title && title.length !== 0) {
+				document.title = `${title} - The Homebrewery`
+			}
+
+			if (url.includes('://homebrewery-pr-')) {
+  				const match = url.match(/pr-(\d+)/);
+  				if (match) {
+    				document.title = `PR-${match[1]} ` + document.title;
+  				}
+			} else if (url.includes('://localhost:')) {
+    			document.title = `LOCAL - ` + document.title;
+  				
+			}
 	    	if (window.location.pathname.startsWith('/admin')) {
 				import('/client/admin/main.jsx');
 			} else {
