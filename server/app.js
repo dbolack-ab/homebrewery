@@ -12,7 +12,7 @@ import _       from 'lodash';
 import jwt     from 'jwt-simple';
 import express from 'express';
 import config  from './config.js';
-import path from 'path';
+import path    from 'path';
 import fs      from 'fs-extra';
 
 import api from './homebrew.api.js';
@@ -447,7 +447,7 @@ export default async function createApp(vite) {
 	}));
 
 
-	const shareEmbedCommon = async(req)=>{
+	const shareEmbedCommon = async(req, res)=>{
 
 		const { brew } = req;
 		req.ogMeta = { ...defaultMetaTags,
@@ -475,13 +475,13 @@ export default async function createApp(vite) {
 
 	//Share Page
 	app.get('/share/:id', dbCheck, asyncHandler(getBrew('share')), asyncHandler(async (req, res, next)=>{
-		shareEmbedCommon(req);
+		shareEmbedCommon(req,res);
 		return next();
 	}));
 
 	//Embed Page - More work will be done on this later...
 	app.get('/embed/:id', dbCheck, asyncHandler(getBrew('share')), asyncHandler(async (req, res, next)=>{
-		shareEmbedCommon(req);
+		shareEmbedCommon(req,res);
 		return next();
 	}));
 
