@@ -272,7 +272,7 @@ const BrewRenderer = (props)=>{
 
 	const frameDidMount = ()=>{	//This triggers when iFrame finishes internal "componentDidMount"
 		scrollToHash(window.location.hash);
-
+		console.log('Frame');
 		setTimeout(()=>{	//We still see a flicker where the style isn't applied yet, so wait 100ms before showing iFrame
 			renderPages(); //Make sure page is renderable before showing
 			setState((prevState)=>({
@@ -326,6 +326,29 @@ const BrewRenderer = (props)=>{
 		</>
 	);
 
+	const brewRenderFrameWrapper = (
+		<>
+			<Frame id='BrewRenderer' initialContent={INITIAL_CONTENT}
+				style={{ width: '100%', height: '100%', visibility: state.visibility }}
+				contentDidMount={frameDidMount}
+				onClick={()=>{emitClick();}}
+			>
+				{brewRenderFrameContents}
+			</Frame>
+		</>
+	);
+
+	const brewRenderDivWrapper = (
+		<>
+			<div id='BrewRenderer'
+				style={{ width: '100%', height: '100%', visibility: state.visibility }}
+				onLoad={frameDidMount}
+			>
+				{brewRenderFrameContents}
+			</div>
+		</>
+	);
+
 	return (
 		<>
 			{/*render dummy page while iFrame is mounting.*/}
@@ -346,13 +369,7 @@ const BrewRenderer = (props)=>{
 			{props.showToolbar ? toolbarEl : ''}
 
 			{/*render in iFrame so broken code doesn't crash the site.*/}
-			<Frame id='BrewRenderer' initialContent={INITIAL_CONTENT}
-				style={{ width: '100%', height: '100%', visibility: state.visibility }}
-				contentDidMount={frameDidMount}
-				onClick={()=>{emitClick();}}
-			>
-				{brewRenderFrameContents}
-			</Frame>
+			{brewRenderDivWrapper}
 			{state.isMounted &&
 			  <div id='brewRendered'></div>
 			}

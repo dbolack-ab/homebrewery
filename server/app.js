@@ -475,13 +475,13 @@ export default async function createApp(vite) {
 
 	//Share Page
 	app.get('/share/:id', dbCheck, asyncHandler(getBrew('share')), asyncHandler(async (req, res, next)=>{
-		shareEmbedCommon(req,res);
+		await shareEmbedCommon(req,res);
 		return next();
 	}));
 
 	//Embed Page - More work will be done on this later...
 	app.get('/embed/:id', dbCheck, asyncHandler(getBrew('share')), asyncHandler(async (req, res, next)=>{
-		shareEmbedCommon(req,res);
+		await shareEmbedCommon(req,res);
 		return next();
 	}));
 
