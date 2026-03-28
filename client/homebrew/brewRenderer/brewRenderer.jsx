@@ -340,15 +340,15 @@ const BrewRenderer = (props)=>{
 
 	const brewRenderDivWrapper = (
 		<>
-			<div id='BrewRenderer'
+			<div id='BrewRendererFlat'
 				style={{ width: '100%', height: '100%', visibility: state.visibility }}
-				onLoad={frameDidMount}
 			>
 				{brewRenderFrameContents}
 			</div>
 		</>
 	);
 
+	if (!props.showToolbar && state.visibility != 'visible') { frameDidMount(); }
 	return (
 		<>
 			{/*render dummy page while iFrame is mounting.*/}
@@ -369,7 +369,7 @@ const BrewRenderer = (props)=>{
 			{props.showToolbar ? toolbarEl : ''}
 
 			{/*render in iFrame so broken code doesn't crash the site.*/}
-			{brewRenderDivWrapper}
+			{props.showToolbar ? brewRenderFrameWrapper:brewRenderDivWrapper}
 			{state.isMounted &&
 			  <div id='brewRendered'></div>
 			}
