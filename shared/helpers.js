@@ -138,7 +138,7 @@ const fetchThemeBundle = async (setError, setThemeBundle, renderer, theme)=>{
 	const themeBundle = res.body;
 	themeBundle.joinedStyles = themeBundle.styles.map((style)=>`<style>${style}</style>`).join('\n\n');
 	setThemeBundle(themeBundle);
-	setError(null);
+	if(setError) { setError(null); }
 };
 
 const debugTextMismatch = (clientTextRaw, serverTextRaw, label)=>{
