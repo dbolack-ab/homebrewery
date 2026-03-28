@@ -80,18 +80,9 @@ export default async function createApp(vite) {
 
 			const herokuRegex = /^https:\/\/(?:homebrewery-pr-\d+\.herokuapp\.com|naturalcrit-pr-\d+\.herokuapp\.com)$/; // Matches any Heroku app
 
-			console.log( 'IsLocalEnvironment');
-			console.log(isLocalEnvironment);
-			console.log('localNetworkRegex');
-			console.log(localNetworkRegex.test(origin));
-			console.log('origin');
-			console.log(origin === 'null');
-			console.log(origin);
-
 			if(!origin || origin === 'null' || allowedOrigins.includes(origin) || herokuRegex.test(origin) || (isLocalEnvironment && localNetworkRegex.test(origin))) {
 				callback(null, true);
 			} else {
-				console.log(origin, 'not allowed');
 				callback(new Error('Not allowed by CORS, if you think this is an error, please contact us - Skidoosh'));
 			}
 		},
