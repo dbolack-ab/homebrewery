@@ -101,8 +101,7 @@ const EmbedPage = (props)=>{
 	const renderPage = (pageText, index)=>{
 
 		let styles = {
-			...(!displayOptions.pageShadows ? { boxShadow: 'none' } : {}),
-			marginTop : '10px'
+			...(!displayOptions.pageShadows ? { boxShadow: 'none' } : {})
 			// Add more conditions as needed
 		};
 		let classes    = 'page';
