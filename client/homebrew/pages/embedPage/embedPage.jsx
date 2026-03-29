@@ -150,7 +150,7 @@ const EmbedPage = (props)=>{
 	};
 
 	return (
-		<div className='sharePage sitePage'>
+		<div>
 			<Meta name='robots' content='noindex, nofollow' />
 			{renderStyle()}
 			<div className={`pages ${displayOptions.startOnRight ? 'recto' : 'verso'}	${displayOptions.spread}`} lang={`${props.lang || 'en'}`} style={pagesStyle}>
