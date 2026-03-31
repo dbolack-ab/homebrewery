@@ -150,7 +150,7 @@ export default async function createApp(vite) {
 			description : 'Homepage'
 		};
 
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	});
 
@@ -167,7 +167,7 @@ export default async function createApp(vite) {
 			description : 'Homepage'
 		};
 
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	});
 
@@ -184,7 +184,7 @@ export default async function createApp(vite) {
 			description : 'A brief guide to converting Legacy documents to the v3 renderer.'
 		};
 
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	});
 
@@ -202,7 +202,7 @@ export default async function createApp(vite) {
 			description : 'Development changelog.'
 		};
 
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	});
 
@@ -220,7 +220,7 @@ export default async function createApp(vite) {
 			description : 'Frequently Asked Questions'
 		};
 
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	});
 
@@ -395,7 +395,7 @@ export default async function createApp(vite) {
 		};
 
 		sanitizeBrew(req.brew, 'edit');
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		res.header('Cache-Control', 'no-cache, no-store');	//reload the latest saved brew when pressing back button, not the cached version before save.
 		return next();
 	}));
@@ -403,7 +403,7 @@ export default async function createApp(vite) {
 	//New Page from ID
 	app.get('/new/:id', asyncHandler(getBrew('share')), asyncHandler(async(req, res, next)=>{
 		sanitizeBrew(req.brew, 'share');
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		const brew = {
 			shareId  : req.brew.shareId,
 			title    : `CLONE - ${req.brew.title}`,
@@ -461,7 +461,7 @@ export default async function createApp(vite) {
 		};
 
 		brew.authors.includes(req.account?.username) ? sanitizeBrew(req.brew, 'shareAuthor') : sanitizeBrew(req.brew, 'share');
-		splitTextStyleAndMetadata(req.brew);
+		await splitTextStyleAndMetadata(req.brew);
 		return next();
 	}));
 
