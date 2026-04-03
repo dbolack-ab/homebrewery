@@ -83,7 +83,7 @@ export default async function createApp(vite) {
 			if(!origin || origin === 'null' || allowedOrigins.includes(origin) || herokuRegex.test(origin) || (isLocalEnvironment && localNetworkRegex.test(origin))) {
 				callback(null, true);
 			} else {
-				callback(new Error('Not allowed by CORS, if you think this is an error, please contact us - Skidoosh'));
+				callback(new Error('Not allowed by CORS, if you think this is an error, please contact us'));
 			}
 		},
 		methods     : ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
