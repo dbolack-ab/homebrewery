@@ -1,23 +1,24 @@
 /*eslint max-lines: ["warn", {"max": 300, "skipBlankLines": true, "skipComments": true}]*/
-require('./brewRenderer.less');
-const React = require('react');
-const { useState, useRef, useMemo, useEffect } = React;
-const _ = require('lodash');
+import brewRendererStylesUrl from './brewRenderer.less?url';
+import headerNavStylesUrl from './headerNav/headerNav.less?url';
+import './brewRenderer.less';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import _ from 'lodash';
 
-const MarkdownLegacy = require('markdownLegacy.js');
-import Markdown from 'markdown.js';
-const ErrorBar = require('./errorBar/errorBar.jsx');
-const ToolBar  = require('./toolBar/toolBar.jsx');
+import MarkdownLegacy from '@shared/markdownLegacy.js';
+import Markdown from '@shared/markdown.js';
+import ErrorBar from './errorBar/errorBar.jsx';
+import ToolBar  from './toolBar/toolBar.jsx';
 
 //TODO: move to the brew renderer
-const RenderWarnings = require('client/components/renderWarnings/renderWarnings.jsx');
-const NotificationPopup = require('./notificationPopup/notificationPopup.jsx');
-const Frame = require('react-frame-component').default;
-const dedent = require('dedent-tabs').default;
-const { printCurrentBrew } = require('../../../shared/helpers.js');
+import RenderWarnings from '../../components/renderWarnings/renderWarnings.jsx';
+import NotificationPopup from './notificationPopup/notificationPopup.jsx';
+import Frame from 'react-frame-component';
+import dedent from 'dedent';
+import { printCurrentBrew } from '@shared/helpers.js';
 
 import HeaderNav from './headerNav/headerNav.jsx';
-import { safeHTML } from './safeHTML.js';
+import safeHTML from './safeHTML.js';
 
 const PAGEBREAK_REGEX_V3 = /^(?=\\page(?:break)?(?: *{[^\n{}]*})?$)/m;
 const PAGEBREAK_REGEX_LEGACY = /\\page(?:break)?/m;
@@ -30,6 +31,8 @@ const INITIAL_CONTENT = dedent`
 	<!DOCTYPE html><html><head>
 	<link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700" rel="stylesheet" type="text/css" />
 	<link href='/homebrew/bundle.css' type="text/css" rel='stylesheet' />
+	<link href="${brewRendererStylesUrl}" rel="stylesheet" />
+	<link href="${headerNavStylesUrl}" rel="stylesheet" />
 	<base target=_blank>
 	</head><body style='overflow: hidden'><div></div></body></html>`;
 
@@ -103,6 +106,7 @@ const BrewRenderer = (props)=>{
 		currentBrewRendererPageNum : 1,
 		themeBundle                : {},
 		onPageChange               : ()=>{},
+		showToolbar                : true,
 		...props
 	};
 
@@ -268,7 +272,6 @@ const BrewRenderer = (props)=>{
 
 	const frameDidMount = ()=>{	//This triggers when iFrame finishes internal "componentDidMount"
 		scrollToHash(window.location.hash);
-
 		setTimeout(()=>{	//We still see a flicker where the style isn't applied yet, so wait 100ms before showing iFrame
 			renderPages(); //Make sure page is renderable before showing
 			setState((prevState)=>({
@@ -298,6 +301,53 @@ const BrewRenderer = (props)=>{
 	const renderedStyle = useMemo(()=>renderStyle(), [props.style, props.themeBundle]);
 	renderedPages = useMemo(()=>renderPages(), [props.text, displayOptions]);
 
+	const toolbarEl = <ToolBar displayOptions={displayOptions} onDisplayOptionsChange={handleDisplayOptionsChange} visiblePages={state.visiblePages.length > 0 ? state.visiblePages : [state.centerPage]} totalPages={rawPages.length} headerState={headerState} setHeaderState={setHeaderState}/>;
+
+	const brewRenderFrameContents = (
+		<>
+			<div className='brewRenderer'
+				onKeyDown={handleControlKeys}
+				tabIndex={-1}
+			>
+
+				{/* Apply CSS from Style tab and render pages from Markdown tab */}
+				{state.isMounted
+					&&
+					<>
+						{renderedStyle}
+						<div className={`pages ${displayOptions.startOnRight ? 'recto' : 'verso'}	${displayOptions.spread}`} lang={`${props.lang || 'en'}`} style={pagesStyle} ref={pagesRef}>
+							{renderedPages}
+						</div>
+					</>
+				}
+			</div>
+			{headerState ? <HeaderNav ref={pagesRef} /> : <></>}
+		</>
+	);
+
+	const brewRenderFrameWrapper = (
+		<>
+			<Frame id='BrewRenderer' initialContent={INITIAL_CONTENT}
+				style={{ width: '100%', height: '100%', visibility: state.visibility }}
+				contentDidMount={frameDidMount}
+				onClick={()=>{emitClick();}}
+			>
+				{brewRenderFrameContents}
+			</Frame>
+		</>
+	);
+
+	const brewRenderDivWrapper = (
+		<>
+			<div id='BrewRendererFlat'
+				style={{ width: '100%', height: '100%', visibility: state.visibility }}
+			>
+				{brewRenderFrameContents}
+			</div>
+		</>
+	);
+
+	if (!props.showToolbar && state.visibility != 'visible') { frameDidMount(); }
 	return (
 		<>
 			{/*render dummy page while iFrame is mounting.*/}
@@ -315,34 +365,15 @@ const BrewRenderer = (props)=>{
 				<NotificationPopup />
 			</div>
 
-			<ToolBar displayOptions={displayOptions} onDisplayOptionsChange={handleDisplayOptionsChange} visiblePages={state.visiblePages.length > 0 ? state.visiblePages : [state.centerPage]} totalPages={rawPages.length} headerState={headerState} setHeaderState={setHeaderState}/>
+			{props.showToolbar ? toolbarEl : ''}
 
 			{/*render in iFrame so broken code doesn't crash the site.*/}
-			<Frame id='BrewRenderer' initialContent={INITIAL_CONTENT}
-				style={{ width: '100%', height: '100%', visibility: state.visibility }}
-				contentDidMount={frameDidMount}
-				onClick={()=>{emitClick();}}
-			>
-				<div className='brewRenderer'
-					onKeyDown={handleControlKeys}
-					tabIndex={-1}
-				>
-
-					{/* Apply CSS from Style tab and render pages from Markdown tab */}
-					{state.isMounted
-						&&
-						<>
-							{renderedStyle}
-							<div className={`pages ${displayOptions.startOnRight ? 'recto' : 'verso'}	${displayOptions.spread}`} lang={`${props.lang || 'en'}`} style={pagesStyle} ref={pagesRef}>
-								{renderedPages}
-							</div>
-						</>
-					}
-				</div>
-				{headerState ? <HeaderNav ref={pagesRef} /> : <></>}
-			</Frame>
+			{props.showToolbar ? brewRenderFrameWrapper:brewRenderDivWrapper}
+			{state.isMounted &&
+			  <div id='brewRendered'></div>
+			}
 		</>
 	);
 };
 
-module.exports = BrewRenderer;
+export default BrewRenderer;

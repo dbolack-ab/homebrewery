@@ -1,21 +1,22 @@
-require('./sharePage.less');
-const React = require('react');
-const { useState, useEffect, useCallback } = React;
-const { Meta } = require('vitreum/headtags');
+import './sharePage.less';
+import React, { useState, useEffect, useCallback } from 'react';
+import Headtags   from '../../../../vitreum/headtags.js';
+const Meta = Headtags.Meta;
 
-const Nav = require('client/homebrew/navbar/nav.jsx');
-const Navbar = require('client/homebrew/navbar/navbar.jsx');
-const MetadataNav = require('client/homebrew/navbar/metadata.navitem.jsx');
-const PrintNavItem = require('client/homebrew/navbar/print.navitem.jsx');
-const RecentNavItem = require('client/homebrew/navbar/recent.navitem.jsx').both;
-const Account = require('client/homebrew/navbar/account.navitem.jsx');
-const BrewRenderer = require('../../brewRenderer/brewRenderer.jsx');
+import Nav from '@navbar/nav.jsx';
+import Navbar from '@navbar/navbar.jsx';
+import MetadataNav from '@navbar/metadata.navitem.jsx';
+import PrintNavItem from '@navbar/print.navitem.jsx';
+import RecentNavItems from '@navbar/recent.navitem.jsx';
+const { both: RecentNavItem } = RecentNavItems;
+import Account from '@navbar/account.navitem.jsx';
+import BrewRenderer from '../../brewRenderer/brewRenderer.jsx';
 
-const { DEFAULT_BREW_LOAD } = require('../../../../server/brewDefaults.js');
-const { printCurrentBrew, fetchThemeBundle } = require('../../../../shared/helpers.js');
+import { DEFAULT_BREW_LOAD } from '../../../../server/brewDefaults.js';
+import { printCurrentBrew, fetchThemeBundle } from '@shared/helpers.js';
 
 const SharePage = (props)=>{
-	const { brew = DEFAULT_BREW_LOAD, disableMeta = false } = props;
+	const { brew = DEFAULT_BREW_LOAD, disableMeta = false, share = true } = props;
 
 	const [themeBundle,                setThemeBundle]                = useState({});
 	const [currentBrewRendererPageNum, setCurrentBrewRendererPageNum] = useState(1);
@@ -65,40 +66,43 @@ const SharePage = (props)=>{
 		</Nav.item>
 	);
 
+	const showNav = (
+		<Navbar>
+			<Nav.section className='titleSection'>
+				{disableMeta ? titleEl : <MetadataNav brew={brew}>{titleEl}</MetadataNav>}
+			</Nav.section>
+
+			<Nav.section>
+				{brew.shareId && (
+					<>
+						<PrintNavItem brew={brew}/>
+						<Nav.dropdown>
+							<Nav.item color='red' icon='fas fa-code'>
+								source
+							</Nav.item>
+							<Nav.item color='blue' icon='fas fa-eye' href={`/source/${processShareId()}`}>
+								view
+							</Nav.item>
+							{renderEditLink()}
+							<Nav.item color='blue' icon='fas fa-download' href={`/download/${processShareId()}`}>
+								download
+							</Nav.item>
+							<Nav.item color='blue' icon='fas fa-clone' href={`/new/${processShareId()}`}>
+								clone to new
+							</Nav.item>
+						</Nav.dropdown>
+					</>
+				)}
+				<RecentNavItem brew={brew} storageKey='view' />
+				<Account />
+			</Nav.section>
+		</Navbar>
+	);
+
 	return (
 		<div className='sharePage sitePage'>
 			<Meta name='robots' content='noindex, nofollow' />
-			<Navbar>
-				<Nav.section className='titleSection'>
-					{disableMeta ? titleEl : <MetadataNav brew={brew}>{titleEl}</MetadataNav>}
-				</Nav.section>
-
-				<Nav.section>
-					{brew.shareId && (
-						<>
-							<PrintNavItem brew={currentBrew}/>
-							<Nav.dropdown>
-								<Nav.item color='red' icon='fas fa-code'>
-									source
-								</Nav.item>
-								<Nav.item color='blue' icon='fas fa-eye' href={`/source/${processShareId()}`}>
-									view
-								</Nav.item>
-								{renderEditLink()}
-								<Nav.item color='blue' icon='fas fa-download' href={`/download/${processShareId()}`}>
-									download
-								</Nav.item>
-								<Nav.item color='blue' icon='fas fa-clone' href={`/new/${processShareId()}`}>
-									clone to new
-								</Nav.item>
-							</Nav.dropdown>
-						</>
-					)}
-					<RecentNavItem brew={brew} storageKey='view' />
-					<Account />
-				</Nav.section>
-			</Navbar>
-
+			{share ? showNav : ''}
 			<div className='content'>
 				<BrewRenderer
 					text={brew.text}
@@ -110,10 +114,11 @@ const SharePage = (props)=>{
 					onPageChange={handleBrewRendererPageChange}
 					currentBrewRendererPageNum={currentBrewRendererPageNum}
 					allowPrint={true}
+					showToolbar={share}
 				/>
 			</div>
 		</div>
 	);
 };
 
-module.exports = SharePage;
+export default SharePage;

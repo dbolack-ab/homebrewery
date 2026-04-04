@@ -1,8 +1,8 @@
-const React = require('react');
-const Nav = require('client/homebrew/navbar/nav.jsx');
-const { printCurrentBrew } = require('../../../shared/helpers.js');
+import React from 'react';
+import Nav from './nav.jsx';
+import { printCurrentBrew, scrapeBrewHTML, scrapeBrewZip } from '@shared/helpers.js';
 
-module.exports = function(props){
+export default function(props){
 	return <Nav.dropdown>
 		<Nav.item color='grey' icon='fas fa-question-circle'>
 			export
@@ -10,14 +10,11 @@ module.exports = function(props){
 		<Nav.item onClick={printCurrentBrew} color='purple' icon='far fa-file-pdf'>
 			get PDF
 		</Nav.item>
-		<Nav.item color='orange' icon='fas fa-file-code' href={`/export/slimHTML/${props?.brew?.editId || props?.brew?.shareId}`}>
-			get HTML (Slim)
+		<Nav.item onClick={scrapeBrewHTML} color='orange' icon='fas fa-file-code'>
+			get HTML
 		</Nav.item>
-		<Nav.item color='orange' icon='fas fa-file-archive' href={`/export/zipHTML/${props?.brew?.editId || props?.brew?.shareId}`}>
+		<Nav.item onClick={scrapeBrewZip} color='orange' icon='fas fa-file-archive'>
 			get HTML (Zip)
-		</Nav.item>
-		<Nav.item color='orange' icon='far fa-file-code'  href={`/export/inlineHTML/${props?.brew?.editId || props?.brew?.shareId}`}>
-			get HTML (Inline)
 		</Nav.item>
 	</Nav.dropdown>;
 };
