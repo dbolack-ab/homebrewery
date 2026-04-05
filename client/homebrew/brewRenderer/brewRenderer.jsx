@@ -273,7 +273,6 @@ const BrewRenderer = (props)=>{
 		scrollToHash(window.location.hash);
 
 		navigation.addEventListener('navigate', (e)=>{
-			console.log(e);
 			if(e.hashChange && e.destination.sameDocument){
 				const dest = e.destination.url.slice(e.destination.url.indexOf('#'));
 				scrollToHash(dest);
