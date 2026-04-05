@@ -16,6 +16,7 @@ const CodeEditor = createReactClass({
 			value         : '',
 			wrap          : true,
 			onChange      : ()=>{},
+			onReady : ()=>{},
 			enableFolding : true,
 			editorTheme   : 'default'
 		};
@@ -177,7 +178,7 @@ const CodeEditor = createReactClass({
 			// 	return el;
 			// }
 		});
-
+		this.props.onReady?.(this.codeMirror);
 		// Add custom behaviors (auto-close curlies and auto-complete emojis)
 		closeTag.autoCloseCurlyBraces(CodeMirror, this.codeMirror);
 		autoCompleteEmoji.showAutocompleteEmoji(CodeMirror, this.codeMirror);
