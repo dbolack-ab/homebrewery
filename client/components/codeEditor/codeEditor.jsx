@@ -189,12 +189,12 @@ const CodeEditor = createReactClass({
 
 	// Use for GFM tabs that use common hot-keys
 	isGFM : function() {
-		if((this.isGFM()) || (this.props.tab === 'brewSnippets')) return true;
+		if((this.props.tab === 'brewText') || (this.props.tab === 'brewSnippets')) return true;
 		return false;
 	},
 
 	isBrewText : function() {
-		if(this.isGFM()) return true;
+		if(this.props.tab === 'brewText') return true;
 		return false;
 	},
 
