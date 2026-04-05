@@ -177,14 +177,17 @@ const debugTextMismatch = (clientTextRaw, serverTextRaw, label)=>{
 };
 
 const scrapeBrew = ()=>{
-	let htmlBody = `<html>\n${window.frames['BrewRenderer'].contentDocument.documentElement.innerHTML}\n</html>`;
+	let htmlBody = `<!DOCTYPE html>\n<html>\n${window.frames['BrewRenderer'].contentDocument.documentElement.innerHTML}\n</html>`;
 	const whereAmI = `${window.location.protocol}//${window.location.host}`;
 
 	// Rewrite local paths
 	htmlBody = htmlBody.replace(/src=(["'])\//gm, 'src=$1' + whereAmI + '/')
 	  .replace(/url\((["'])\//gm, 'url($1' + whereAmI + '/')
 	  .replace(/src=(["']).\//gm, 'src="$1' + whereAmI + '/')
-	  .replace(/url\((["']).\//gm, 'url($1' + whereAmI + '/');
+	  .replace(/url\((["']).\//gm, 'url($1' + whereAmI + '/')
+	  .replace(/href=(["'])\/\//gm, 'href=$1' + window.location.protocol + '//')
+	  .replace(/href=(["'])\//gm, 'href=$1' + whereAmI + '/');
+
 	return htmlBody;
 };
 
