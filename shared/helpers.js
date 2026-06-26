@@ -1,7 +1,10 @@
+/* eslint-disable max-lines */
 import _       from 'lodash';
 import yaml    from 'js-yaml';
 import request from '../client/homebrew/utils/request-middleware.js';
 import jszip     from 'jszip';
+import path from 'path';
+import url from 'url';
 
 // Convert the templates from a brew to a Snippets Structure.
 const brewSnippetsToJSON = (menuTitle, userBrewSnippets, themeBundleSnippets=null, full=true)=>{
@@ -221,12 +224,12 @@ const scrapeBrew = ()=>{
 	const whereAmI = `${window.location.protocol}//${window.location.host}`;
 
 	// Rewrite local paths
-	htmlBody = htmlBody.replace(/src=(["'])\//gm, 'src=$1' + whereAmI + '/')
-	  .replace(/url\((["'])\//gm, 'url($1' + whereAmI + '/')
-	  .replace(/src=(["']).\//gm, 'src="$1' + whereAmI + '/')
-	  .replace(/url\((["']).\//gm, 'url($1' + whereAmI + '/')
-	  .replace(/href=(["'])\/\//gm, 'href=$1' + window.location.protocol + '//')
-	  .replace(/href=(["'])\//gm, 'href=$1' + whereAmI + '/');
+	// htmlBody = htmlBody.replace(/src=(["'])\//gm, `src=$1${whereAmI}/`)
+	//   .replace(/url\((["'])\//gm, `url($1${whereAmI}/`)
+	//   .replace(/src=(["']).\//gm, `src="$1${whereAmI}/`)
+	//   .replace(/url\((["']).\//gm, `url($1${whereAmI}/`)
+	//   .replace(/href=(["'])\/\//gm, `href=$1${window.location.protocol}//`)
+	//   .replace(/href=(["'])\//gm, `href=$1${whereAmI}/`);
 
 	return htmlBody;
 };
@@ -252,13 +255,14 @@ const downloadBlob = (brewContents, fileName)=>{
 	a.click();
 };
 
-const scrapeBrewZip = ()=>{
+const scrapeBrewZip = async ()=>{
 	const htmlBody = scrapeBrew();
 
 	const fauxDoc = document.createElement('div');
 	fauxDoc.innerHTML = htmlBody;
+	const allImages = fauxDoc.getElementsByTagName('img');
 	console.log('Should be here!');
-	console.log(fauxDoc.getElementsByTagName('img'));
+	console.log(allImages);
 	console.log('Should be here!');
 
 	// DO STUFF!
@@ -268,6 +272,19 @@ const scrapeBrewZip = ()=>{
 	const fonts  = archive.folder('fonts');
 	const css    = archive.folder('css');
 	archive.file('index.html', htmlBody);
+
+	// waits for images to load before resolving promise and opening print dialog
+	await Promise.all(
+		allImages
+						.map((img)=>new Promise(async (resolve)=>{
+							const result = await fetch(img.src);
+							if(result.status == 200) {
+								const fileName = path.baseName(url.parse(img.src));
+								images.file(fileName, result.blob);
+							}
+						}))
+	);
+
 
 	archive.generateAsync({ type: 'blob' }).then((zipBlob)=>{
 		downloadBlob(zipBlob, 'testDownload.zip');
