@@ -6,12 +6,12 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import _ from 'lodash';
 
 import MarkdownLegacy from '@shared/markdownLegacy.js';
-import Markdown from '@shared/markdown.js';
+import { hbfm } from 'hbmarkedwrapper';
 import ErrorBar from './errorBar/errorBar.jsx';
 import ToolBar  from './toolBar/toolBar.jsx';
 
 //TODO: move to the brew renderer
-import RenderWarnings from '../../components/renderWarnings/renderWarnings.jsx';
+import RenderWarnings from '@components/renderWarnings/renderWarnings.jsx';
 import NotificationPopup from './notificationPopup/notificationPopup.jsx';
 import Frame from 'react-frame-component';
 import dedent from 'dedent';
@@ -29,6 +29,7 @@ const TOOLBAR_STATE_KEY = 'HB_renderer_toolbarState';
 
 const INITIAL_CONTENT = dedent`
 	<!DOCTYPE html><html><head>
+	<title>Rendered Brew Content</title>
 	<link href='/homebrew/bundle.css' type="text/css" rel='stylesheet' />
 	<link href="${brewRendererStylesUrl}" rel="stylesheet" />
 	<link href="${headerNavStylesUrl}" rel="stylesheet" />
@@ -203,7 +204,7 @@ const BrewRenderer = (props)=>{
 			return <BrewPage className='page phb' index={index} key={index} contents={html} style={styles} onVisibilityChange={handlePageVisibilityChange} />;
 		} else {
 			if(pageText.startsWith('\\page')) {
-				const firstLineTokens  = Markdown.marked.lexer(pageText.split('\n', 1)[0])[0].tokens;
+				const firstLineTokens  = hbfm.marked.lexer(pageText.split('\n', 1)[0])[0].tokens;
 				const injectedTags = firstLineTokens?.find((obj)=>obj.injectedTags !== undefined)?.injectedTags;
 				if(injectedTags) {
 					styles     = { ...styles, ...injectedTags.styles };
@@ -211,7 +212,7 @@ const BrewRenderer = (props)=>{
 					classes    = [classes, injectedTags.classes].join(' ').trim();
 					attributes = injectedTags.attributes;
 					if(global.enablev4) {
-						if (attributes && Object.hasOwn(attributes, 'hbtemplate')) {
+						if(attributes && Object.hasOwn(attributes, 'hbtemplate')) {
 							pageTemplates[index] = attributes['hbtemplate'];
 						}
 					}
@@ -221,7 +222,7 @@ const BrewRenderer = (props)=>{
 					if(!pageTemplates[index]) {
 						for (let i=index;i>=0; i--) {
 							// If one is found, add the template attribute
-							if (pageTemplates[i]) attributes['hbtemplate'] = pageTemplates[i];
+							if(pageTemplates[i]) attributes['hbtemplate'] = pageTemplates[i];
 						}
 					}
 				}
@@ -231,7 +232,7 @@ const BrewRenderer = (props)=>{
 			// DO NOT REMOVE!!! REQUIRED FOR BACKWARDS COMPATIBILITY WITH NON-UPGRADABLE VERSIONS OF CHROME.
 			pageText += `\n\n&nbsp;\n\\column\n&nbsp;`; //Artificial column break at page end to emulate column-fill:auto (until `wide` is used, when column-fill:balance will reappear)
 
-			const html = Markdown.render(pageText, index);
+			const html = hbfm.render(pageText, index);
 
 			return <BrewPage className={classes} index={index} key={index} contents={html} style={styles} attributes={attributes} onVisibilityChange={handlePageVisibilityChange} />;
 		}
@@ -355,10 +356,11 @@ const BrewRenderer = (props)=>{
 
 	const brewRenderFrameWrapper = (
 		<>
-			<Frame id='BrewRenderer' initialContent={INITIAL_CONTENT}
+			<Frame id='BrewRenderer'  title="Rendered Brew Content" initialContent={INITIAL_CONTENT}
 				style={{ width: '100%', height: '100%', visibility: state.visibility }}
 				contentDidMount={frameDidMount}
 				onClick={()=>{emitClick();}}
+				sandbox="allow-same-origin allow-modals allow-top-navigation"
 			>
 				{brewRenderFrameContents}
 			</Frame>
@@ -367,9 +369,7 @@ const BrewRenderer = (props)=>{
 
 	const brewRenderDivWrapper = (
 		<>
-			<div id='BrewRendererFlat'
-				style={{ width: '100%', height: '100%', visibility: state.visibility }}
-			>
+			<div id='BrewRendererFlat' style={{ width: '100%', height: '100%', visibility: state.visibility }} >
 				{brewRenderFrameContents}
 			</div>
 		</>
